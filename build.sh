@@ -87,7 +87,7 @@ echo "Building on commits:
 
 EXEC_ARGS=
 
-EXEC_ARGS="$EXEC_ARGS --target gluten-build"
+EXEC_ARGS="$EXEC_ARGS --target gluten-base"
 EXEC_ARGS="$EXEC_ARGS "
 EXEC_ARGS="$EXEC_ARGS --ulimit nofile=8192:8192"
 EXEC_ARGS="$EXEC_ARGS "
@@ -126,6 +126,8 @@ EXEC_ARGS="$EXEC_ARGS "
 EXEC_ARGS="$EXEC_ARGS --build-arg HTTP_PROXY_PORT=$HTTP_PROXY_PORT"
 EXEC_ARGS="$EXEC_ARGS "
 EXEC_ARGS="$EXEC_ARGS -t $DOCKER_TARGET_IMAGE"
+EXEC_ARGS="$EXEC_ARGS "
+EXEC_ARGS="$EXEC_ARGS -f dockerfile-build"
 EXEC_ARGS="$EXEC_ARGS "
 
 if [ -n "$DOCKER_CACHE_IMAGE" ]
