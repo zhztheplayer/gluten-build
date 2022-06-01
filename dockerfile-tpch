@@ -20,4 +20,8 @@ RUN cd /opt/gluten-it \
 RUN cd /opt/gluten-it \
     && mvn clean package
 
+FROM gluten-tpch AS gluten-tpch-debug
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ssh vim gdb gdbserver net-tools
+
 # EOF
