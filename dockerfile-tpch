@@ -1,0 +1,23 @@
+FROM hongzezhang/gluten-base:latest AS gluten-tpch
+MAINTAINER Hongze Zhang<hongze.zhang@intel.com>
+
+SHELL ["/bin/bash", "-c"]
+
+ARG GLUTEN_IT_REPO
+ARG GLUTEN_IT_COMMIT
+
+RUN test -n "$GLUTEN_IT_REPO" || (echo "GLUTEN_IT_REPO not set" && false)
+RUN test -n "$GLUTEN_IT_COMMIT" || (echo "GLUTEN_IT_COMMIT not set" && false)
+
+RUN cd /opt/ \
+    && git clone $GLUTEN_IT_REPO gluten-it
+
+RUN cd /opt/gluten-it \
+    && git fetch origin $GLUTEN_IT_COMMIT:build_$GLUTEN_IT_COMMIT \
+    && git checkout build_$GLUTEN_IT_COMMIT
+    
+
+RUN cd /opt/gluten-it \
+    && mvn clean package
+
+# EOF
