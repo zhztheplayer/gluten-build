@@ -15,6 +15,9 @@ DOCKER_TARGET_IMAGE_TPCH_DEBUG=${DOCKER_TARGET_IMAGE_TPCH_DEBUG:-$DEFAULT_DOCKER
 # GDB server bind port
 GDB_SERVER_PORT=${GDB_SERVER_PORT:-$DEFAULT_GDB_SERVER_PORT}
 
+# JVM jdwp bind port
+JDWP_PORT=${JDWP_PORT:-$DEFAULT_JDWP_PORT}
+
 # Gluten-it commit hash
 GLUTEN_IT_COMMIT="$(git ls-remote $GLUTEN_IT_REPO $GLUTEN_IT_BRANCH | awk '{print $1;}')"
 
@@ -47,6 +50,6 @@ docker build $EXEC_ARGS
 
 CMD_ARGS="$*"
 
-docker run --init --rm --privileged $DOCKER_TARGET_IMAGE_TPCH_DEBUG bash -c "gdbserver :$GDB_SERVER_PORT java -Xmx2G -cp /opt/gluten-it/target/gluten-it-1.0-SNAPSHOT-jar-with-dependencies.jar io.glutenproject.integration.tpc.h.Tpch $CMD_ARGS"
+docker run --init --rm --privileged $DOCKER_TARGET_IMAGE_TPCH_DEBUG bash -c "gdbserver :$GDB_SERVER_PORT java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=$JDWP_PORT -Xmx2G -cp /opt/gluten-it/target/gluten-it-1.0-SNAPSHOT-jar-with-dependencies.jar io.glutenproject.integration.tpc.h.Tpch $CMD_ARGS"
 
 # EOF
