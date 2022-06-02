@@ -47,6 +47,6 @@ docker build $EXEC_ARGS
 
 CMD_ARGS="$*"
 
-docker run --init --rm --privileged --network host $DOCKER_TARGET_IMAGE_TPCH_DEBUG bash -c "gdbserver :$GDB_SERVER_PORT java -Xmx2G -cp /opt/gluten-it/target/gluten-it-1.0-SNAPSHOT-jar-with-dependencies.jar io.glutenproject.integration.tpc.h.Tpch $CMD_ARGS"
+docker run --init --rm --privileged $DOCKER_TARGET_IMAGE_TPCH_DEBUG bash -c "gdbserver :$GDB_SERVER_PORT java -Xmx2G -cp /opt/gluten-it/target/gluten-it-1.0-SNAPSHOT-jar-with-dependencies.jar io.glutenproject.integration.tpc.h.Tpch $CMD_ARGS"
 
 # EOF
