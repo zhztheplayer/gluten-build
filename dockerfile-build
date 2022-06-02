@@ -44,7 +44,7 @@ RUN cat /root/.m2/settings.xml
 
 # APT dependencies
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata git sudo openjdk-8-jdk llvm-11-dev clang-11 maven libiberty-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata git sudo openjdk-8-jdk llvm-11-dev clang-11 maven libiberty-dev libdwarf-dev
 
 # USE JAVA 8
 RUN apt-get purge -y openjdk-11-jre-headless
@@ -86,7 +86,7 @@ RUN cd /opt/ \
 RUN cd /opt/env-velox/ \
     && bash scripts/setup-ubuntu.sh
     
-# Remove velox's protobuf.
+# Remove Velox's protobuf installed by the above script.
 RUN apt-get purge -y protobuf-compiler libprotobuf-dev
 
 # Install protobuf 3.13.0
