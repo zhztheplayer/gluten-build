@@ -22,6 +22,6 @@ RUN cd /opt/gluten-it \
 
 FROM gluten-tpch AS gluten-tpch-debug
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ssh vim gdb gdbserver net-tools
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ssh gdb gdbserver net-tools vim unzip libjemalloc-dev
 
 # EOF
