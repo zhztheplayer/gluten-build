@@ -3,6 +3,8 @@ MAINTAINER Hongze Zhang<hongze.zhang@intel.com>
 
 SHELL ["/bin/bash", "-c"]
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ssh net-tools vim unzip libjemalloc-dev
+
 ARG GLUTEN_IT_REPO
 ARG GLUTEN_IT_COMMIT
 
@@ -22,6 +24,6 @@ RUN cd /opt/gluten-it \
 
 FROM gluten-tpch AS gluten-tpch-debug
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ssh gdb gdbserver net-tools vim unzip libjemalloc-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gdb gdbserver
 
 # EOF
