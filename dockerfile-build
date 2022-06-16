@@ -57,6 +57,72 @@ RUN TZ=$TIMEZONE \
     && echo $TZ > /etc/timezone \
     && dpkg-reconfigure -f noninteractive tzdata
 
+# Whether debug build is enabled
+ARG DEBUG_BUILD
+RUN test -n "$DEBUG_BUILD" || (echo "DEBUG_BUILD not set" && false)
+
+# Prepare Velox Make build options
+ENV VELOX_MAKE_OPTIONS="$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]; then echo \"debug\"; else echo \"release\"; fi)"
+
+# Prepare Arrow CMake build options
+ENV ARROW_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]; then echo \"Debug\"; else echo \"Release\"; fi) \
+                         -DARROW_BUILD_STATIC=OFF \
+                         -DARROW_BUILD_SHARED=ON \
+                         -DARROW_SUBSTRAIT=ON \
+                         -DARROW_COMPUTE=ON \
+                         -DARROW_GANDIVA_JAVA=ON \
+                         -DARROW_GANDIVA=ON \
+                         -DARROW_PARQUET=ON \
+                         -DARROW_HDFS=ON \
+                         -DARROW_BOOST_USE_SHARED=OFF \
+                         -DARROW_JNI=ON \
+                         -DARROW_DATASET=ON \
+                         -DARROW_WITH_PROTOBUF=ON \
+                         -DARROW_WITH_SNAPPY=ON \
+                         -DARROW_WITH_LZ4=ON \
+                         -DARROW_WITH_ZSTD=OFF \
+                         -DARROW_WITH_BROTLI=OFF \
+                         -DARROW_WITH_ZLIB=OFF \
+                         -DARROW_WITH_FASTPFOR=ON \
+                         -DARROW_FILESYSTEM=ON \
+                         -DARROW_S3=OFF \
+                         -DARROW_JSON=ON \
+                         -DARROW_CSV=ON \
+                         -DARROW_ORC=OFF \
+                         -DARROW_FLIGHT=OFF \
+                         -DARROW_JEMALLOC=OFF \
+                         -DARROW_SIMD_LEVEL=AVX2 \
+                         -DARROW_RUNTIME_SIMD_LEVEL=MAX \
+                         -DARROW_BUILD_TESTS=OFF \
+                         -DARROW_PROTOBUF_USE_SHARED=OFF \
+                         -DARROW_DEPENDENCY_SOURCE=AUTO \
+                         -DCMAKE_INSTALL_PREFIX=/opt/arrow/cpp/build/bundle \
+                         .."
+
+# Prepare Arrow Maven build options
+ENV ARROW_MAVEN_OPTIONS="-P arrow-jni,!error-prone,!error-prone-jdk8 \
+                        -pl dataset,gandiva \
+                        -am \
+                        -Darrow.cpp.build.dir=/opt/arrow/cpp/build/$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]; then echo \"debug\"; else echo \"release\"; fi) \
+                        -DskipTests \
+                        -Dcheckstyle.skip=true"
+
+# Prepare Gluten Maven build options
+ENV GLUTEN_MAVEN_OPTIONS="-Pbackends-velox \
+                          -Dbuild_protobuf=OFF \
+                          -Dbuild_arrow=OFF \
+                          -Dbuild_velox=OFF \
+                          -Darrow_root=/opt/arrow/cpp/build/bundle \
+                          -Dvelox_home=/opt/velox \
+                          -Dvelox_build_type=$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]; then echo \"debug\"; else echo \"release\"; fi) \
+                          -Ddebug_build=$DEBUG_BUILD \
+                          -Dbuild_cpp=ON \
+                          -Dbuild_velox=ON \
+                          -Dbuild_gazelle_cpp=ON \
+                          -DskipTests \
+                          -Dscalastyle.skip=true \
+                          -Dcheckstyle.skip=true"            
+
 # These branches are mainly for pre-downloading dependencies to speed-up builds. 
 # Thus it should not be required to change these values every time when the build branch
 # is changed.
@@ -75,15 +141,15 @@ RUN test -n "$CACHE_GLUTEN_REPO" || (echo "CACHE_GLUTEN_REPO not set" && false)
 RUN test -n "$CACHE_GLUTEN_BRANCH" || (echo "CACHE_GLUTEN_BRANCH not set" && false)
 
 RUN cd /opt/ \
-    && git clone $CACHE_VELOX_REPO -b $CACHE_VELOX_BRANCH env-velox
+    && git clone $CACHE_VELOX_REPO -b $CACHE_VELOX_BRANCH velox
     
 RUN cd /opt/ \
-    && git clone $CACHE_ARROW_REPO -b $CACHE_ARROW_BRANCH env-arrow
+    && git clone $CACHE_ARROW_REPO -b $CACHE_ARROW_BRANCH arrow
 
 RUN cd /opt/ \
-    && git clone $CACHE_GLUTEN_REPO -b $CACHE_GLUTEN_BRANCH env-gluten
+    && git clone $CACHE_GLUTEN_REPO -b $CACHE_GLUTEN_BRANCH gluten
 
-RUN cd /opt/env-velox/ \
+RUN cd /opt/velox/ \
     && bash scripts/setup-ubuntu.sh
     
 # Remove Velox's protobuf installed by the above script.
@@ -105,92 +171,26 @@ RUN cd /opt/protobuf-install \
     && make install \
     && ldconfig
 
-RUN cd /opt/env-arrow/java \
-    && mvn clean de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -P arrow-jni,!error-prone,!error-prone-jdk8 -pl dataset,gandiva -am
+# Set ccache size
+RUN ccache -M 128G
+RUN ccache -s
 
-RUN cd /opt/env-gluten \
-    && mvn clean de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -P backends-velox
-
-##
-
-ARG DEBUG_BUILD
-RUN test -n "$DEBUG_BUILD" || (echo "DEBUG_BUILD not set" && false)
-
-ARG TARGET_VELOX_REPO
-ARG TARGET_VELOX_COMMIT
-
-RUN test -n "$TARGET_VELOX_REPO" || (echo "TARGET_VELOX_REPO not set" && false)
-RUN test -n "$TARGET_VELOX_COMMIT" || (echo "TARGET_VELOX_COMMIT not set" && false)
-
-RUN cd /opt/ \
-    && git clone $TARGET_VELOX_REPO velox
-
-RUN cd /opt/velox \
-    && git fetch origin $TARGET_VELOX_COMMIT:build_$TARGET_VELOX_COMMIT \
-    && git checkout build_$TARGET_VELOX_COMMIT
-
+# Prebuild Velox
 RUN cd /opt/velox \
     && git submodule sync --recursive \
     && git submodule update --init --recursive
 
 RUN cd /opt/velox \
-    && make $(if [ "$DEBUG_BUILD" == "ON" ]; then echo "debug"; else echo "release"; fi)
+    && bash -c "make $VELOX_MAKE_OPTIONS"
 
-##
-
-ARG TARGET_ARROW_REPO
-ARG TARGET_ARROW_COMMIT
-
-RUN test -n "$TARGET_ARROW_REPO" || (echo "TARGET_ARROW_REPO not set" && false)
-RUN test -n "$TARGET_ARROW_COMMIT" || (echo "TARGET_ARROW_COMMIT not set" && false)
-
-RUN cd /opt/ \
-    && git clone $TARGET_ARROW_REPO arrow
-
-RUN cd /opt/arrow \
-    && git fetch origin $TARGET_ARROW_COMMIT:build_$TARGET_ARROW_COMMIT \
-    && git checkout build_$TARGET_ARROW_COMMIT
-    
+# Prebuild Arrow
 RUN cd /opt/arrow/cpp \
-    && mkdir build/ \
+    && mkdir -p build/ \
     && cd build/ \
-    && cmake -DCMAKE_BUILD_TYPE=$(if [ "$DEBUG_BUILD" == "ON" ]; then echo "Debug"; else echo "Release"; fi) \
-             -DARROW_BUILD_STATIC=OFF \
-             -DARROW_BUILD_SHARED=ON \
-             -DARROW_SUBSTRAIT=ON \
-             -DARROW_COMPUTE=ON \
-             -DARROW_GANDIVA_JAVA=ON \
-             -DARROW_GANDIVA=ON \
-             -DARROW_PARQUET=ON \
-             -DARROW_HDFS=ON \
-             -DARROW_BOOST_USE_SHARED=OFF \
-             -DARROW_JNI=ON \
-             -DARROW_DATASET=ON \
-             -DARROW_WITH_PROTOBUF=ON \
-             -DARROW_WITH_SNAPPY=ON \
-             -DARROW_WITH_LZ4=ON \
-             -DARROW_WITH_ZSTD=OFF \
-             -DARROW_WITH_BROTLI=OFF \
-             -DARROW_WITH_ZLIB=OFF \
-             -DARROW_WITH_FASTPFOR=ON \
-             -DARROW_FILESYSTEM=ON \
-             -DARROW_S3=OFF \
-             -DARROW_JSON=ON \
-             -DARROW_CSV=ON \
-             -DARROW_ORC=OFF \
-             -DARROW_FLIGHT=OFF \
-             -DARROW_JEMALLOC=OFF \
-             -DARROW_SIMD_LEVEL=AVX2 \
-             -DARROW_RUNTIME_SIMD_LEVEL=MAX \
-             -DARROW_BUILD_TESTS=OFF \
-             -DARROW_PROTOBUF_USE_SHARED=OFF \
-             -DARROW_DEPENDENCY_SOURCE=AUTO \
-             -DCMAKE_INSTALL_PREFIX=/opt/arrow/cpp/build/bundle \
-             ..
+    && bash -c "cmake $ARROW_CMAKE_OPTIONS"
 
-RUN NPROC=$(nproc) \
-    && cd /opt/arrow/cpp/build/ \
-    && make install -j $NPROC
+RUN cd /opt/arrow/cpp/build/ \
+    && make install -j$(nproc)
 
 RUN cd /opt/arrow \
     && mkdir -p java/c/build \
@@ -199,9 +199,61 @@ RUN cd /opt/arrow \
     && cmake --build .
 
 RUN cd /opt/arrow/java \
-    && mvn clean install -P arrow-jni,!error-prone,!error-prone-jdk8 -pl dataset,gandiva -am -Darrow.cpp.build.dir=/opt/arrow/cpp/build/$(if [ "$DEBUG_BUILD" == "ON" ]; then echo "debug"; else echo "release"; fi) -DskipTests -Dcheckstyle.skip=true
+    && bash -c "mvn clean install $ARROW_MAVEN_OPTIONS"
 
-##
+# Prebuild Gluten
+RUN cd /opt/gluten \
+    &&  bash -c "mvn clean install $GLUTEN_MAVEN_OPTIONS"
+
+## Build Velox
+
+ARG TARGET_VELOX_REPO
+ARG TARGET_VELOX_COMMIT
+
+RUN test -n "$TARGET_VELOX_REPO" || (echo "TARGET_VELOX_REPO not set" && false)
+RUN test -n "$TARGET_VELOX_COMMIT" || (echo "TARGET_VELOX_COMMIT not set" && false)
+
+RUN cd /opt/velox \
+    && git fetch $TARGET_VELOX_REPO $TARGET_VELOX_COMMIT:build_$TARGET_VELOX_COMMIT \
+    && git checkout build_$TARGET_VELOX_COMMIT
+
+RUN cd /opt/velox \
+    && git submodule sync --recursive \
+    && git submodule update --init --recursive
+
+RUN cd /opt/velox \
+    && bash -c "make $VELOX_MAKE_OPTIONS"
+
+## Build Arrow
+
+ARG TARGET_ARROW_REPO
+ARG TARGET_ARROW_COMMIT
+
+RUN test -n "$TARGET_ARROW_REPO" || (echo "TARGET_ARROW_REPO not set" && false)
+RUN test -n "$TARGET_ARROW_COMMIT" || (echo "TARGET_ARROW_COMMIT not set" && false)
+
+RUN cd /opt/arrow \
+    && git fetch $TARGET_ARROW_REPO $TARGET_ARROW_COMMIT:build_$TARGET_ARROW_COMMIT \
+    && git checkout build_$TARGET_ARROW_COMMIT
+
+RUN cd /opt/arrow/cpp \
+    && mkdir -p build/ \
+    && cd build/ \
+    && bash -c "cmake $ARROW_CMAKE_OPTIONS"
+
+RUN cd /opt/arrow/cpp/build/ \
+    && make install -j$(nproc)
+
+RUN cd /opt/arrow \
+    && mkdir -p java/c/build \
+    && cd java/c/build \
+    && cmake .. \
+    && cmake --build .
+
+RUN cd /opt/arrow/java \
+    && bash -c "mvn clean install $ARROW_MAVEN_OPTIONS"
+
+## Build Gluten
 
 ARG TARGET_GLUTEN_REPO
 ARG TARGET_GLUTEN_COMMIT
@@ -209,27 +261,11 @@ ARG TARGET_GLUTEN_COMMIT
 RUN test -n "$TARGET_GLUTEN_REPO" || (echo "TARGET_GLUTEN_REPO not set" && false)
 RUN test -n "$TARGET_GLUTEN_COMMIT" || (echo "TARGET_GLUTEN_COMMIT not set" && false)
 
-RUN cd /opt/ \
-    && git clone $TARGET_GLUTEN_REPO gluten
-
 RUN cd /opt/gluten \
-    && git fetch origin $TARGET_GLUTEN_COMMIT:build_$TARGET_GLUTEN_COMMIT \
+    && git fetch $TARGET_GLUTEN_REPO $TARGET_GLUTEN_COMMIT:build_$TARGET_GLUTEN_COMMIT \
     && git checkout build_$TARGET_GLUTEN_COMMIT
 
 RUN cd /opt/gluten \
-    &&  mvn clean install -Pbackends-velox \
-                          -Dbuild_protobuf=OFF \
-                          -Dbuild_arrow=OFF \
-                          -Dbuild_velox=OFF \
-                          -Darrow_root=/opt/arrow/cpp/build/bundle \
-                          -Dvelox_home=/opt/velox \
-                          -Dvelox_build_type=$(if [ "$DEBUG_BUILD" == "ON" ]; then echo "debug"; else echo "release"; fi) \
-                          -Ddebug_build=$DEBUG_BUILD \
-                          -Dbuild_cpp=ON \
-                          -Dbuild_velox=ON \
-                          -Dbuild_gazelle_cpp=ON \
-                          -DskipTests \
-                          -Dscalastyle.skip=true \
-                          -Dcheckstyle.skip=true
+    &&  bash -c "mvn clean install $GLUTEN_MAVEN_OPTIONS"
 
 # EOF
