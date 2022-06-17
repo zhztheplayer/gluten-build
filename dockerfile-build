@@ -99,6 +99,9 @@ ENV ARROW_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]
                          -DCMAKE_INSTALL_PREFIX=/opt/arrow/cpp/build/bundle \
                          .."
 
+# Prepare Arrow Java C-ABI CMake build options
+ENV ARROW_JAVA_C_ABI_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]; then echo \"Debug\"; else echo \"Release\"; fi) .."
+
 # Prepare Arrow Maven build options
 ENV ARROW_MAVEN_OPTIONS="-P arrow-jni,!error-prone,!error-prone-jdk8 \
                         -pl dataset,gandiva \
@@ -195,7 +198,7 @@ RUN cd /opt/arrow/cpp/build/ \
 RUN cd /opt/arrow \
     && mkdir -p java/c/build \
     && cd java/c/build \
-    && cmake .. \
+    && bash -c "cmake $ARROW_JAVA_C_ABI_CMAKE_OPTIONS" \
     && cmake --build .
 
 RUN cd /opt/arrow/java \
@@ -247,7 +250,7 @@ RUN cd /opt/arrow/cpp/build/ \
 RUN cd /opt/arrow \
     && mkdir -p java/c/build \
     && cd java/c/build \
-    && cmake .. \
+    && bash -c "cmake $ARROW_JAVA_C_ABI_CMAKE_OPTIONS" \
     && cmake --build .
 
 RUN cd /opt/arrow/java \
