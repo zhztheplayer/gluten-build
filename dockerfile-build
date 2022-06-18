@@ -62,7 +62,7 @@ ARG DEBUG_BUILD
 RUN test -n "$DEBUG_BUILD" || (echo "DEBUG_BUILD not set" && false)
 
 # Prepare Velox Make build options
-ENV VELOX_MAKE_OPTIONS="$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]; then echo \"debug\"; else echo \"release\"; fi)"
+ENV VELOX_MAKE_OPTIONS="$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]; then echo \"debug\"; else echo \"release\"; fi) EXTRA_CMAKE_FLAGS=\"-DVELOX_ENABLE_PARQUET=ON\""
 
 # Prepare Arrow CMake build options
 ENV ARROW_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ \"\$DEBUG_BUILD\" == \"ON\" ]; then echo \"Debug\"; else echo \"Release\"; fi) \
