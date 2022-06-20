@@ -22,7 +22,7 @@ RUN cd /opt/gluten-it \
 RUN cd /opt/gluten-it \
     && mvn clean package
 
-FROM gluten-tpch AS gluten-tpch-debug
+FROM gluten-tpch AS gluten-tpch-debug-server
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gdb gdbserver
 

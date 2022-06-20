@@ -9,40 +9,75 @@ source "$BASEDIR/build.sh"
 GLUTEN_IT_REPO=${GLUTEN_IT_REPO:-$DEFAULT_GLUTEN_IT_REPO}
 GLUTEN_IT_BRANCH=${GLUTEN_IT_BRANCH:-$DEFAULT_GLUTEN_IT_BRANCH}
 
-# Build will result in this image
-DOCKER_TARGET_IMAGE_TPCH=${DOCKER_TARGET_IMAGE_TPCH:-$DEFAULT_DOCKER_TARGET_IMAGE_TPCH}
+# Java options
+EXTRA_JAVA_OPTIONS=${EXTRA_JAVA_OPTIONS:-$DEFAULT_EXTRA_JAVA_OPTIONS}
 
+# Run GDB server and JVM jdwp server.
+RUN_DEBUG_SERVER=${RUN_DEBUG_SERVER:-$DEFAULT_RUN_DEBUG_SERVER}
+
+# Build will result in this image (RUN_DEBUG_SERVER=OFF)
+if [ "RUN_DEBUG_SERVER" == "ON" ]
+then
+  DOCKER_SELECTED_TARGET_IMAGE_TPCH=${DOCKER_TARGET_IMAGE_TPCH:-$DEFAULT_DOCKER_TARGET_IMAGE_TPCH}
+else
+  DOCKER_SELECTED_TARGET_IMAGE_TPCH=${DOCKER_TARGET_IMAGE_TPCH_DEBUG_SERVER:-$DEFAULT_DOCKER_TARGET_IMAGE_TPCH_DEBUG_SERVER}
+fi
+
+# GDB server bind port
+GDB_SERVER_PORT=${GDB_SERVER_PORT:-$DEFAULT_GDB_SERVER_PORT}
+
+# JVM jdwp bind port
+JDWP_PORT=${JDWP_PORT:-$DEFAULT_JDWP_PORT}
+
+# Gluten-it commit hash
 GLUTEN_IT_COMMIT="$(git ls-remote $GLUTEN_IT_REPO $GLUTEN_IT_BRANCH | awk '{print $1;}')"
 
 if [ -z "$GLUTEN_IT_COMMIT" ]
 then
-   echo "Unable to parse GLUTEN_IT_COMMIT."
-   exit 1
+  echo "Unable to parse GLUTEN_IT_COMMIT."
+  exit 1
 fi
 
 echo "Building on commits:
     Gluten-it commit: $GLUTEN_IT_COMMIT"
 
-EXEC_ARGS=
+DOCKER_BUILD_ARGS=
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --ulimit nofile=8192:8192"
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg GLUTEN_IT_REPO=$GLUTEN_IT_REPO"
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg GLUTEN_IT_COMMIT=$GLUTEN_IT_COMMIT"
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS -f dockerfile-tpch"
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --target gluten-tpch-debug-server"
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS -t $DOCKER_SELECTED_TARGET_IMAGE_TPCH"
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS $BASEDIR"
 
-EXEC_ARGS="$EXEC_ARGS --ulimit nofile=8192:8192"
-EXEC_ARGS="$EXEC_ARGS "
-EXEC_ARGS="$EXEC_ARGS --build-arg GLUTEN_IT_REPO=$GLUTEN_IT_REPO"
-EXEC_ARGS="$EXEC_ARGS "
-EXEC_ARGS="$EXEC_ARGS --build-arg GLUTEN_IT_COMMIT=$GLUTEN_IT_COMMIT"
-EXEC_ARGS="$EXEC_ARGS "
-EXEC_ARGS="$EXEC_ARGS -f dockerfile-tpch"
-EXEC_ARGS="$EXEC_ARGS "
-EXEC_ARGS="$EXEC_ARGS --target gluten-tpch"
-EXEC_ARGS="$EXEC_ARGS "
-EXEC_ARGS="$EXEC_ARGS -t $DOCKER_TARGET_IMAGE_TPCH"
+DOCKER_RUN_ARGS=
+DOCKER_RUN_ARGS="$DOCKER_RUN_ARGS -i"
+DOCKER_RUN_ARGS="$DOCKER_RUN_ARGS --rm"
+DOCKER_RUN_ARGS="$DOCKER_RUN_ARGS --init"
+DOCKER_RUN_ARGS="$DOCKER_RUN_ARGS --privileged"
+DOCKER_RUN_ARGS="$DOCKER_RUN_ARGS --ulimit nofile=65536:65536"
+DOCKER_RUN_ARGS="$DOCKER_RUN_ARGS --ulimit core=-1"
+DOCKER_RUN_ARGS="$DOCKER_RUN_ARGS --security-opt seccomp=unconfined"
 
-EXEC_ARGS="$EXEC_ARGS $BASEDIR"
+TPCH_CMD_ARGS="$*"
 
-docker build $EXEC_ARGS
+BASH_ARGS=
+if [ "$RUN_DEBUG_SERVER" == "ON" ]
+then
+  BASH_ARGS="$BASH_ARGS gdbserver :$GDB_SERVER_PORT"
+  BASH_ARGS="$BASH_ARGS java"
+  BASH_ARGS="$BASH_ARGS -ea"
+  BASH_ARGS="$BASH_ARGS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=$JDWP_PORT"
+  BASH_ARGS="$BASH_ARGS $EXTRA_JAVA_OPTIONS"
+else
+  BASH_ARGS="$BASH_ARGS java"
+  BASH_ARGS="$BASH_ARGS $EXTRA_JAVA_OPTIONS"
+fi
+BASH_ARGS="$BASH_ARGS -cp /opt/gluten-it/target/gluten-it-1.0-SNAPSHOT-jar-with-dependencies.jar"
+BASH_ARGS="$BASH_ARGS io.glutenproject.integration.tpc.h.Tpch $TPCH_CMD_ARGS"
 
-CMD_ARGS="$*"
 
-docker run -i --rm --init --privileged --ulimit nofile=65536:65536 --ulimit core=-1 --security-opt seccomp=unconfined $DOCKER_TARGET_IMAGE_TPCH bash -c "java -Xmx2G -cp /opt/gluten-it/target/gluten-it-1.0-SNAPSHOT-jar-with-dependencies.jar io.glutenproject.integration.tpc.h.Tpch $CMD_ARGS"
+docker build $DOCKER_BUILD_ARGS
+docker run $DOCKER_RUN_ARGS $DOCKER_SELECTED_TARGET_IMAGE_TPCH bash -c "$BASH_ARGS"
 
 # EOF
