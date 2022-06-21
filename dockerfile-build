@@ -43,8 +43,14 @@ RUN cat /etc/apt/apt.conf || echo "Apt proxy not set"
 RUN cat /root/.m2/settings.xml
 
 # Whether debug build is enabled
-ARG ENABLE_DEBUG_BUILD
-RUN if [ -n "$ENABLE_DEBUG_BUILD" ]; then echo "Debug build is enabled!"; fi
+ARG JDK_DEBUG_BUILD
+ARG VELOX_DEBUG_BUILD
+ARG ARROW_DEBUG_BUILD
+ARG GLUTEN_DEBUG_BUILD
+RUN if [ -n "$JDK_DEBUG_BUILD" ]; then echo "JDK debug build is enabled!"; fi
+RUN if [ -n "$VELOX_DEBUG_BUILD" ]; then echo "Velox debug build is enabled!"; fi
+RUN if [ -n "$ARROW_DEBUG_BUILD" ]; then echo "Arrow debug build is enabled!"; fi
+RUN if [ -n "$GLUTEN_DEBUG_BUILD" ]; then echo "Gluten debug build is enabled!"; fi
 
 ## APT dependencies
 
@@ -55,7 +61,7 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget tar tzdata git llvm-11-dev clang-11 libiberty-dev libdwarf-dev
 
 # Install OpenJDK 8 and Maven
-RUN if [ -n "$ENABLE_DEBUG_BUILD" ]; \
+RUN if [ -n "$JDK_DEBUG_BUILD" ]; \
     then \
       mkdir -p /opt/jdk/ \
       && mkdir -p /opt/maven/ \
@@ -74,7 +80,7 @@ RUN if [ -n "$ENABLE_DEBUG_BUILD" ]; \
       DEBIAN_FRONTEND=noninteractive apt-get install -y maven; \
     fi
 
-ENV JAVA_HOME=${ENABLE_DEBUG_BUILD:+"/opt/jdk/j2sdk-image"}
+ENV JAVA_HOME=${JDK_DEBUG_BUILD:+"/opt/jdk/j2sdk-image"}
 
 ARG TIMEZONE
 RUN test -n "$TIMEZONE" || (echo "TIMEZONE not set" && false)
@@ -85,10 +91,10 @@ RUN TZ=$TIMEZONE \
     && dpkg-reconfigure -f noninteractive tzdata
 
 # Prepare Velox Make build options
-ENV VELOX_MAKE_OPTIONS="$(if [ -n \"\$ENABLE_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) EXTRA_CMAKE_FLAGS=\"-DVELOX_ENABLE_PARQUET=ON\""
+ENV VELOX_MAKE_OPTIONS="$(if [ -n \"\$VELOX_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) EXTRA_CMAKE_FLAGS=\"-DVELOX_ENABLE_PARQUET=ON\""
 
 # Prepare Arrow CMake build options
-ENV ARROW_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ENABLE_DEBUG_BUILD\" ]; then echo \"Debug\"; else echo \"Release\"; fi) \
+ENV ARROW_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ARROW_DEBUG_BUILD\" ]; then echo \"Debug\"; else echo \"Release\"; fi) \
                          -DARROW_BUILD_STATIC=OFF \
                          -DARROW_BUILD_SHARED=ON \
                          -DARROW_SUBSTRAIT=ON \
@@ -123,13 +129,13 @@ ENV ARROW_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ENABLE_DEBUG_BUILD\" ]
                          .."
 
 # Prepare Arrow Java C-ABI CMake build options
-ENV ARROW_JAVA_C_ABI_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ENABLE_DEBUG_BUILD\" ]; then echo \"Debug\"; else echo \"Release\"; fi) .."
+ENV ARROW_JAVA_C_ABI_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ARROW_DEBUG_BUILD\" ]; then echo \"Debug\"; else echo \"Release\"; fi) .."
 
 # Prepare Arrow Maven build options
 ENV ARROW_MAVEN_OPTIONS="-P arrow-jni,!error-prone,!error-prone-jdk8 \
                         -pl dataset,gandiva \
                         -am \
-                        -Darrow.cpp.build.dir=/opt/arrow/cpp/build/$(if [ -n \"\$ENABLE_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) \
+                        -Darrow.cpp.build.dir=/opt/arrow/cpp/build/$(if [ -n \"\$ARROW_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) \
                         -DskipTests \
                         -Dcheckstyle.skip=true"
 
@@ -140,8 +146,8 @@ ENV GLUTEN_MAVEN_OPTIONS="-Pbackends-velox \
                           -Dbuild_velox=OFF \
                           -Darrow_root=/opt/arrow/cpp/build/bundle \
                           -Dvelox_home=/opt/velox \
-                          -Dvelox_build_type=$(if [ -n \"\$ENABLE_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) \
-                          -Ddebug_build=$(if [ -n \"\$ENABLE_DEBUG_BUILD\" ]; then echo \"ON\"; else echo \"OFF\"; fi) \
+                          -Dvelox_build_type=$(if [ -n \"\$VELOX_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) \
+                          -Ddebug_build=$(if [ -n \"\$GLUTEN_DEBUG_BUILD\" ]; then echo \"ON\"; else echo \"OFF\"; fi) \
                           -Dbuild_cpp=ON \
                           -Dbuild_velox=ON \
                           -Dbuild_gazelle_cpp=ON \
