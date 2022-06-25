@@ -26,12 +26,10 @@ FROM gluten-tpch AS gluten-tpch-gdb-server
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gdb gdbserver
 
-FROM gluten-tpch AS gluten-tpch-gdbfrontend-server
+FROM gluten-tpch AS gluten-tpch-gdbgui-server
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends pip gdb tmux
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gdb pip
 
-RUN cd /opt/ \
-    && git clone -b master https://github.com/zhztheplayer/gdb-frontend.git gdb-frontend \
-    && pip install gdb-frontend/
+RUN pip install gdbgui
 
 # EOF
