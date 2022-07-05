@@ -12,13 +12,27 @@ GLUTEN_IT_BRANCH=${GLUTEN_IT_BRANCH:-$DEFAULT_GLUTEN_IT_BRANCH}
 # Java options
 EXTRA_JAVA_OPTIONS=${EXTRA_JAVA_OPTIONS:-$DEFAULT_EXTRA_JAVA_OPTIONS}
 
+# Run GDB.
+RUN_GDB=${RUN_GDB:-$DEFAULT_RUN_GDB}
+
 # Run GDB server.
 RUN_GDB_SERVER=${RUN_GDB_SERVER:-$DEFAULT_RUN_GDB_SERVER}
 
 # Run JVM jdwp server.
 RUN_JDWP_SERVER=${RUN_JDWP_SERVER:-$DEFAULT_RUN_JDWP_SERVER}
 
-if [ "$RUN_GDB_SERVER" == "ON" ]
+if [ "$RUN_GDB" == "ON" ] && [ "$RUN_GDB_SERVER" == "ON" ]
+then
+  echo "RUN_GDB_SERVER and RUN_GDB_SERVER can not be turned on at the same time."
+  exit 1
+fi
+
+
+if [ "$RUN_GDB" == "ON" ]
+then
+  DOCKER_SELECTED_TARGET_IMAGE_TPCH=${DOCKER_TARGET_IMAGE_TPCH_GDB:-$DEFAULT_DOCKER_TARGET_IMAGE_TPCH_GDB}
+  DOCKER_BUILD_TARGET_NAME=gluten-tpch-gdb
+elif [ "$RUN_GDB_SERVER" == "ON" ]
 then
   DOCKER_SELECTED_TARGET_IMAGE_TPCH=${DOCKER_TARGET_IMAGE_TPCH_GDB_SERVER:-$DEFAULT_DOCKER_TARGET_IMAGE_TPCH_GDB_SERVER}
   DOCKER_BUILD_TARGET_NAME=gluten-tpch-gdb-server
@@ -75,7 +89,11 @@ JAVA_ARGS="$JAVA_ARGS $EXTRA_JAVA_OPTIONS"
 JAVA_ARGS="$JAVA_ARGS -cp /opt/gluten-it/target/gluten-it-1.0-SNAPSHOT-jar-with-dependencies.jar"
 JAVA_ARGS="$JAVA_ARGS io.glutenproject.integration.tpc.h.Tpch $TPCH_CMD_ARGS"
 
-if [ "$RUN_GDB_SERVER" == "ON" ]
+BASH_ARGS=
+if [ "$RUN_GDB" == "ON" ]
+then
+  BASH_ARGS="gdb --args java $JAVA_ARGS"
+elif [ "$RUN_GDB_SERVER" == "ON" ]
 then
   BASH_ARGS="$BASH_ARGS gdbserver :$GDB_SERVER_PORT java $JAVA_ARGS"
 else
