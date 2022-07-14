@@ -91,7 +91,7 @@ RUN TZ=$TIMEZONE \
     && dpkg-reconfigure -f noninteractive tzdata
 
 # Prepare Velox Make build options
-ENV VELOX_MAKE_OPTIONS="$(if [ -n \"\$VELOX_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) EXTRA_CMAKE_FLAGS=\"-DVELOX_ENABLE_PARQUET=ON\""
+ENV VELOX_MAKE_OPTIONS="$(if [ -n \"\$VELOX_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) EXTRA_CMAKE_FLAGS=\"-DVELOX_ENABLE_PARQUET=ON -DVELOX_ENABLE_ARROW=ON\""
 
 # Prepare Arrow CMake build options
 ENV ARROW_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ARROW_DEBUG_BUILD\" ]; then echo \"Debug\"; else echo \"Release\"; fi) \
