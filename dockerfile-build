@@ -150,7 +150,7 @@ ENV GLUTEN_MAVEN_OPTIONS="-Pbackends-velox \
                           -Ddebug_build=$(if [ -n \"\$GLUTEN_DEBUG_BUILD\" ]; then echo \"ON\"; else echo \"OFF\"; fi) \
                           -Dbuild_cpp=ON \
                           -Dbuild_velox=ON \
-                          -Dbuild_gazelle_cpp=OFF \
+                          -Dbuild_gazelle_cpp=ON \
                           -DskipTests \
                           -Dscalastyle.skip=true \
                           -Dcheckstyle.skip=true"            
