@@ -1,4 +1,4 @@
-FROM hongzezhang/gluten-base:latest AS gluten-tpch
+FROM hongzezhang/gluten-base:latest AS gluten-tpc
 MAINTAINER Hongze Zhang<hongze.zhang@intel.com>
 
 SHELL ["/bin/bash", "-c"]
@@ -22,11 +22,11 @@ RUN cd /opt/gluten-it \
 RUN cd /opt/gluten-it \
     && mvn clean package
 
-FROM gluten-tpch AS gluten-tpch-gdb
+FROM gluten-tpc AS gluten-tpc-gdb
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gdb
 
-FROM gluten-tpch-gdb AS gluten-tpch-gdb-server
+FROM gluten-tpc-gdb AS gluten-tpc-gdb-server
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gdbserver
 
