@@ -129,13 +129,16 @@ ENV ARROW_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ARROW_DEBUG_BUILD\" ];
                          .."
 
 # Prepare Arrow Java C-ABI CMake build options
-ENV ARROW_JAVA_C_ABI_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ARROW_DEBUG_BUILD\" ]; then echo \"Debug\"; else echo \"Release\"; fi) .."
+ENV ARROW_JAVA_C_ABI_CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=$(if [ -n \"\$ARROW_DEBUG_BUILD\" ]; then echo \"Debug\"; else echo \"Release\"; fi) \
+                                    -DCMAKE_INSTALL_PREFIX=/opt/arrow/cpp/build/bundle \
+                                    .."
 
 # Prepare Arrow Maven build options
 ENV ARROW_MAVEN_OPTIONS="-P arrow-jni,!error-prone,!error-prone-jdk8 \
                         -pl dataset,gandiva \
                         -am \
-                        -Darrow.cpp.build.dir=/opt/arrow/cpp/build/$(if [ -n \"\$ARROW_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) \
+                        -Darrow.cpp.build.dir=/opt/arrow/cpp/build/bundle/lib \
+                        -Darrow.c.jni.dist.dir=/opt/arrow/cpp/build/bundle/lib \
                         -DskipTests \
                         -Dcheckstyle.skip=true"
 
@@ -229,8 +232,8 @@ RUN cd /opt/arrow/cpp/build/ \
     && make install -j$(nproc)
 
 RUN cd /opt/arrow \
-    && mkdir -p java/c/build \
-    && cd java/c/build \
+    && mkdir -p java/build \
+    && cd java/build \
     && bash -c "cmake $ARROW_JAVA_C_ABI_CMAKE_OPTIONS" \
     && cmake --build .
 
