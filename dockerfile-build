@@ -93,8 +93,6 @@ RUN TZ=$TIMEZONE \
 # Prepare Gluten Maven build options
 ENV GLUTEN_MAVEN_OPTIONS="-Pbackends-velox \
                           -Dbuild_protobuf=OFF \
-                          -Darrow_root=/opt/arrow/cpp/build/bundle \
-                          -Dvelox_home=/opt/velox \
                           -Dvelox_build_type=$(if [ -n \"\$VELOX_DEBUG_BUILD\" ]; then echo \"debug\"; else echo \"release\"; fi) \
                           -Ddebug_build=$(if [ -n \"\$GLUTEN_DEBUG_BUILD\" ]; then echo \"ON\"; else echo \"OFF\"; fi) \
                           -Dbuild_cpp=ON \
