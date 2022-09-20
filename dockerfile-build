@@ -58,7 +58,7 @@ RUN if [ -n "$GLUTEN_DEBUG_BUILD" ]; then echo "Gluten debug build is enabled!";
 RUN apt-get update
 
 # Essentials
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget tar tzdata git ccache cmake build-essential llvm-11-dev clang-11 libiberty-dev libdwarf-dev libre2-dev libz-dev libssl-dev libboost-all-dev libcurl4-openssl-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget tar tzdata git ccache cmake ninja build-essential llvm-11-dev clang-11 libiberty-dev libdwarf-dev libre2-dev libz-dev libssl-dev libboost-all-dev libcurl4-openssl-dev
 
 # Install OpenJDK 8 and Maven
 RUN if [ -n "$JDK_DEBUG_BUILD" ]; \
