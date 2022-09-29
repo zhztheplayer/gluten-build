@@ -75,12 +75,11 @@ RUN if [ "$JDK_DEBUG_BUILD" == "ON" ]; \
       && rm -f apache-maven-3.6.3-bin.tar.gz \
       && cp -rs /opt/jdk/j2sdk-image/bin/* /usr/local/bin/ \
       && cp -rs /opt/maven/apache-maven-3.6.3/bin/mvn /usr/local/bin/; \
+      && echo 'JAVA_HOME=/opt/jdk/j2sdk-image' > ~/.mavenrc
     else \
       DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jdk; \
       DEBIAN_FRONTEND=noninteractive apt-get install -y maven; \
     fi
-
-ENV JAVA_HOME=${JDK_DEBUG_BUILD:+"/opt/jdk/j2sdk-image"}
 
 ARG TIMEZONE
 RUN test -n "$TIMEZONE" || (echo "TIMEZONE not set" && false)
