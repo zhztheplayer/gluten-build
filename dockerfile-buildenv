@@ -74,8 +74,8 @@ RUN if [ "$JDK_DEBUG_BUILD" == "ON" ]; \
       && tar -xvf apache-maven-3.6.3-bin.tar.gz \
       && rm -f apache-maven-3.6.3-bin.tar.gz \
       && cp -rs /opt/jdk/j2sdk-image/bin/* /usr/local/bin/ \
-      && cp -rs /opt/maven/apache-maven-3.6.3/bin/mvn /usr/local/bin/; \
-      && echo 'JAVA_HOME=/opt/jdk/j2sdk-image' > ~/.mavenrc \
+      && cp -rs /opt/maven/apache-maven-3.6.3/bin/mvn /usr/local/bin/ \
+      && echo 'JAVA_HOME=/opt/jdk/j2sdk-image' > ~/.mavenrc; \
     else \
       DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jdk; \
       DEBIAN_FRONTEND=noninteractive apt-get install -y maven; \
