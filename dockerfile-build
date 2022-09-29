@@ -19,7 +19,7 @@ RUN ccache -s
 
 # Prebuild Gluten
 RUN cd /opt/gluten \
-    &&  bash -c "mvn clean install $GLUTEN_MAVEN_OPTIONS"
+    && bash -c "mvn clean install $GLUTEN_MAVEN_OPTIONS"
 
 # Build Gluten
 ARG TARGET_GLUTEN_REPO
