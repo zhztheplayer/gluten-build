@@ -27,10 +27,25 @@ DOCKER_TARGET_IMAGE_BUILDENV=${DOCKER_TARGET_IMAGE_BUILDENV:-$DEFAULT_DOCKER_TAR
 
 ## Debug build flags
 
-JDK_DEBUG_BUILD=${JDK_DEBUG_BUILD:-OFF}
-VELOX_DEBUG_BUILD=${VELOX_DEBUG_BUILD:-OFF}
-ARROW_DEBUG_BUILD=${ARROW_DEBUG_BUILD:-OFF}
-GLUTEN_DEBUG_BUILD=${GLUTEN_DEBUG_BUILD:-OFF}
+if [ -n $JDK_DEBUG_BUILD ]
+then
+  echo "Do not set JDK_DEBUG_BUILD manually!"
+fi
+
+if [ -n $VELOX_DEBUG_BUILD ]
+then
+  echo "Do not set VELOX_DEBUG_BUILD manually!"
+fi
+
+if [ -n $ARROW_DEBUG_BUILD ]
+then
+  echo "Do not set ARROW_DEBUG_BUILD manually!"
+fi
+
+if [ -n $GLUTEN_DEBUG_BUILD ]
+then
+  echo "Do not set GLUTEN_DEBUG_BUILD manually!"
+fi
 
 if [ "$DEBUG_BUILD" == "ON" ]
 then
