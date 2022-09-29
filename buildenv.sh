@@ -27,14 +27,12 @@ DOCKER_TARGET_IMAGE_BUILDENV=${DOCKER_TARGET_IMAGE_BUILDENV:-$DEFAULT_DOCKER_TAR
 
 ##
 
-# Script uses "test -n XXX_DEBUG_BUILD" to determine if debug build is enabled.
-# Not any non-empty value will be recognized as "enabled". Just comment out to disable.
 if [ "$DEBUG_BUILD" == "ON" ]
 then
-#  JDK_DEBUG_BUILD=enabled
-  VELOX_DEBUG_BUILD=enabled
-  ARROW_DEBUG_BUILD=enabled
-  GLUTEN_DEBUG_BUILD=enabled
+  JDK_DEBUG_BUILD=OFF
+  VELOX_DEBUG_BUILD=ON
+  ARROW_DEBUG_BUILD=ON
+  GLUTEN_DEBUG_BUILD=ON
 fi
 
 if [ "$USE_ALI_MAVEN_MIRROR" == "ON" ]
