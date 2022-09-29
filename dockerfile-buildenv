@@ -39,7 +39,7 @@ RUN if [ -n "$MAVEN_MIRROR_URL" ]; \
 # Display environment information
 RUN ulimit -a
 RUN env
-RUN cat /etc/apt/apt.conf || echo "Apt proxy not set"
+RUN cat /etc/apt/apt.conf || (echo "Apt proxy not set" && false)
 RUN cat /root/.m2/settings.xml
 
 # Whether debug build is enabled
