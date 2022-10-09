@@ -98,7 +98,7 @@ ENV GLUTEN_MAVEN_OPTIONS="-Pbackends-velox \
                           -Dbuild_velox=ON \
                           -Dbuild_velox_from_source=ON \
                           -Dbuild_gazelle_cpp=OFF \
-                          -Denable_ep_cache=OFF \
+                          -Denable_ep_cache=ON \
                           -DskipTests \
                           -Dscalastyle.skip=true \
                           -Dcheckstyle.skip=true"
