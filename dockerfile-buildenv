@@ -90,7 +90,8 @@ RUN TZ=$TIMEZONE \
     && dpkg-reconfigure -f noninteractive tzdata
 
 # Prepare Gluten Maven build options
-ENV GLUTEN_MAVEN_OPTIONS="-Pbackends-velox \
+ENV GLUTEN_MAVEN_OPTIONS="-Pspark-3.2 \
+                          -Pbackends-velox \
                           -Dbuild_protobuf=OFF \
                           -Ddebug_build=$GLUTEN_DEBUG_BUILD \
                           -Dbuild_cpp=ON \
