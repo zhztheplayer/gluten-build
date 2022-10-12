@@ -20,12 +20,11 @@ See the [config file](https://github.com/zhztheplayer/gluten-te/blob/main/defaul
 
 # Example Usages
 
-## Example: Build and run on non-default branches of `gluten`, `arrow` and `velox`
+## Example: Build and run on non-default branches of `gluten`
 
 ```sh
+TARGET_GLUTEN_REPO=my_repoh \
 TARGET_GLUTEN_BRANCH=my_branch \
-TARGET_ARROW_BRANCH=my_branch \
-TARGET_VELOX_BRANCH=my_branch \
 ./tpc.sh
 ```
 
