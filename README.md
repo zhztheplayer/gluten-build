@@ -20,7 +20,23 @@ See the [config file](https://github.com/zhztheplayer/gluten-te/blob/main/defaul
 
 # Example Usages
 
-## Example: Build and run on non-default branches of `gluten`
+## Example: Build local gluten code
+
+```
+cd gluten/
+{PATH_TO_GLUTEN_TE}/buildhere.sh
+```
+
+## Example: Build local gluten code behind a http proxy
+
+```
+cd gluten/
+HTTP_PROXY_HOST=myproxy.example.com \
+HTTP_PROXY_PORT=55555 \
+{PATH_TO_GLUTEN_TE}/buildhere.sh
+```
+
+## Example: Build and run TPC benchmark on non-default remote branches of `gluten`
 
 ```sh
 TARGET_GLUTEN_REPO=my_repoh \
@@ -28,7 +44,7 @@ TARGET_GLUTEN_BRANCH=my_branch \
 ./tpc.sh
 ```
 
-## Example: Build and run behind a http proxy
+## Example: Build and run TPC benchmark on official latest code behind a http proxy
 
 ```sh
 HTTP_PROXY_HOST=myproxy.example.com \
