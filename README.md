@@ -6,7 +6,20 @@ Build and run [gluten](https://github.com/oap-project/gluten) and [gluten-it](ht
 
 Only Linux and MacOS are currently supported. Before running the scripts, make sure you have `git` and `docker` installed in your host machine.
 
-# Getting Started
+# Getting Started (Build Gluten code)
+
+```sh
+git clone -b main https://github.com/zhztheplayer/gluten.git gluten # Gluten main code
+git clone -b main https://github.com/zhztheplayer/gluten-te.git gluten-te # gluten-te code
+
+export HTTP_PROXY_HOST=myproxy.example.com # in case you are behind http proxy
+export HTTP_PROXY_PORT=55555 # in case you are behind http proxy
+
+cd gluten/
+../gluten-it/buildhere.sh
+```
+
+# Getting Started (TPC)
 
 ```sh
 git clone -b main https://github.com/zhztheplayer/gluten-te.git gluten-te
