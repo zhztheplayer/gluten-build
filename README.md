@@ -23,6 +23,10 @@ cd gluten/
 
 ```sh
 git clone -b main https://github.com/zhztheplayer/gluten-te.git gluten-te
+
+export HTTP_PROXY_HOST=myproxy.example.com # in case you are behind http proxy
+export HTTP_PROXY_PORT=55555 # in case you are behind http proxy
+
 cd gluten-te
 ./tpc.sh
 ```
