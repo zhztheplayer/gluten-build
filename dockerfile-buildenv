@@ -89,5 +89,5 @@ RUN TZ=$TIMEZONE \
     && echo $TZ > /etc/timezone \
     && dpkg-reconfigure -f noninteractive tzdata
 
-# Prepare Gluten Maven build options
-ENV GLUTEN_MAVEN_OPTIONS="-Ddebug_build=$GLUTEN_DEBUG_BUILD"
+# Default Gluten Maven build options (empty as of now)
+ENV GLUTEN_MAVEN_OPTIONS=""
