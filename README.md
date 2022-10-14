@@ -53,6 +53,16 @@ HTTP_PROXY_PORT=55555 \
 {PATH_TO_GLUTEN_TE}/examples/buildhere-veloxbe.sh
 ```
 
+## Example: Run specific maven commands
+
+```
+cd gluten/
+
+# To use buildhere.sh as the containerized "mvn" alias
+# For example, here we display the maven dependency tree
+{PATH_TO_GLUTEN_TE}/buildhere.sh clean dependency:tree
+```
+
 ## Example: Build and run TPC benchmark on non-default remote branches of Gluten (Velox backend)
 
 ```sh
