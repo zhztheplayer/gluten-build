@@ -16,4 +16,4 @@ EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
                      -Dscalastyle.skip=true \
                      -Dcheckstyle.skip=true"
 
-$BASEDIR/../buildhere.sh clean install $EXTRA_MAVEN_OPTIONS
+$BASEDIR/../cmvn.sh clean install $EXTRA_MAVEN_OPTIONS
