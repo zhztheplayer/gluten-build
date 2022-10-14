@@ -6,7 +6,7 @@ Build and run [gluten](https://github.com/oap-project/gluten) and [gluten-it](ht
 
 Only Linux and MacOS are currently supported. Before running the scripts, make sure you have `git` and `docker` installed in your host machine.
 
-# Getting Started (Build Gluten code)
+# Getting Started (Build Gluten code, Velox backend)
 
 ```sh
 git clone -b main https://github.com/zhztheplayer/gluten.git gluten # Gluten main code
@@ -16,10 +16,10 @@ export HTTP_PROXY_HOST=myproxy.example.com # in case you are behind http proxy
 export HTTP_PROXY_PORT=55555 # in case you are behind http proxy
 
 cd gluten/
-../gluten-it/buildhere.sh
+../gluten-it/examples/buildhere-veloxbe.sh
 ```
 
-# Getting Started (TPC)
+# Getting Started (TPC, Velox backend)
 
 ```sh
 git clone -b main https://github.com/zhztheplayer/gluten-te.git gluten-te
@@ -37,23 +37,33 @@ See the [config file](https://github.com/zhztheplayer/gluten-te/blob/main/defaul
 
 # Example Usages
 
-## Example: Build local Gluten code
+## Example: Build local Gluten code (Velox backend)
 
 ```
 cd gluten/
-{PATH_TO_GLUTEN_TE}/buildhere.sh
+{PATH_TO_GLUTEN_TE}/examples/buildhere-veloxbe.sh
 ```
 
-## Example: Build local Gluten code behind a http proxy
+## Example: Build local Gluten code behind a http proxy (Velox backend)
 
 ```
 cd gluten/
 HTTP_PROXY_HOST=myproxy.example.com \
 HTTP_PROXY_PORT=55555 \
-{PATH_TO_GLUTEN_TE}/buildhere.sh
+{PATH_TO_GLUTEN_TE}/examples/buildhere-veloxbe.sh
 ```
 
-## Example: Build and run TPC benchmark on non-default remote branches of Gluten
+## Example: Run specific maven commands
+
+```
+cd gluten/
+
+# To use buildhere.sh as the containerized "mvn" alias
+# For example, here we display the maven dependency tree
+{PATH_TO_GLUTEN_TE}/buildhere.sh clean dependency:tree
+```
+
+## Example: Build and run TPC benchmark on non-default remote branches of Gluten (Velox backend)
 
 ```sh
 TARGET_GLUTEN_REPO=my_repoh \
@@ -61,7 +71,7 @@ TARGET_GLUTEN_BRANCH=my_branch \
 ./tpc.sh
 ```
 
-## Example: Build and run TPC benchmark on official latest code behind a http proxy
+## Example: Build and run TPC benchmark on official latest code behind a http proxy (Velox backend)
 
 ```sh
 HTTP_PROXY_HOST=myproxy.example.com \
@@ -69,7 +79,7 @@ HTTP_PROXY_PORT=55555 \
 ./tpc.sh
 ```
 
-## Example: Create debug build for all codes, and open a GDB debugger interface during running gluten-it
+## Example: Create debug build for all codes, and open a GDB debugger interface during running gluten-it (Velox backend)
 
 ```sh
 DEBUG_BUILD=ON \
