@@ -20,7 +20,7 @@ RUN cd /opt/gluten-it \
     
 
 RUN cd /opt/gluten-it \
-    && mvn clean package -Pgluten-velox -Darrow.version=10.0.0-SNAPSHOT
+    && mvn clean package -Pspark-3.2 -Pgluten-velox -Darrow.version=10.0.0-SNAPSHOT
 
 FROM gluten-tpc AS gluten-tpc-gdb
 
