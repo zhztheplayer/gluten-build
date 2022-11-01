@@ -50,11 +50,11 @@ RUN ccache -s
 # Default Gluten Maven build options (empty as of now)
 ENV GLUTEN_MAVEN_OPTIONS="-Ddebug_build=$GLUTEN_DEBUG_BUILD"
 
-ARG BACKEND_TYPE
+ARG BUILD_BACKEND_TYPE
 
-RUN test -n "$BACKEND_TYPE" || (echo "BACKEND_TYPE not set" && false)
+RUN test -n "$BUILD_BACKEND_TYPE" || (echo "BUILD_BACKEND_TYPE not set" && false)
 
-RUN if [ "$BACKEND_TYPE" == "velox" ]; \
+RUN if [ "$BUILD_BACKEND_TYPE" == "velox" ]; \
     then \
       EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
                            -Pbackends-velox \
@@ -68,7 +68,7 @@ RUN if [ "$BACKEND_TYPE" == "velox" ]; \
                            -Dscalastyle.skip=true \
                            -Dcheckstyle.skip=true \
                            -Denable_ep_cache=ON"; \
-    elif [ "$BACKEND_TYPE" == "gazelle-cpp" ]; \
+    elif [ "$BUILD_BACKEND_TYPE" == "gazelle-cpp" ]; \
     then \
       EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
                            -Pbackends-gazelle \
@@ -83,7 +83,7 @@ RUN if [ "$BACKEND_TYPE" == "velox" ]; \
                            -Dcheckstyle.skip=true \
                            -Denable_ep_cache=ON"; \
     else \
-      echo "Unrecognizable backend type: $BACKEND_TYPE"; \
+      echo "Unrecognizable backend type: $BUILD_BACKEND_TYPE"; \
       exit 1; \
     fi && echo $EXTRA_MAVEN_OPTIONS > ~/.gluten-mvn-options;
 
