@@ -50,39 +50,6 @@ CACHE_GLUTEN_BRANCH=${CACHE_GLUTEN_BRANCH:-$DEFAULT_GLUTEN_BRANCH}
 # Backend type
 BACKEND_TYPE=${BACKEND_TYPE:-$DEFAULT_BACKEND_TYPE}
 
-if [ "$BACKEND_TYPE" == "velox" ]
-then
-  EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
-                       -Pbackends-velox \
-                       -Dbuild_protobuf=OFF \
-                       -Dbuild_cpp=ON \
-                       -Dbuild_arrow=ON \
-                       -Dbuild_velox=ON \
-                       -Dbuild_velox_from_source=ON \
-                       -Dbuild_gazelle_cpp=OFF \
-                       -DskipTests \
-                       -Dscalastyle.skip=true \
-                       -Dcheckstyle.skip=true \
-                       -Denable_ep_cache=ON"
-elif [ "$BACKEND_TYPE" == "gazelle-cpp" ]
-then
-  EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
-                       -Pbackends-gazelle \
-                       -Dbuild_protobuf=ON \
-                       -Dbuild_cpp=ON \
-                       -Dbuild_arrow=ON \
-                       -Dbuild_velox=OFF \
-                       -Dbuild_velox_from_source=OFF \
-                       -Dbuild_gazelle_cpp=ON \
-                       -DskipTests \
-                       -Dscalastyle.skip=true \
-                       -Dcheckstyle.skip=true \
-                       -Denable_ep_cache=ON"
-else
-  echo "Unrecognizable backend type: $BACKEND_TYPE"
-  exit 1
-fi
-
 # Build will result in this image
 DOCKER_TARGET_IMAGE_BUILD=${DOCKER_TARGET_IMAGE_BUILD:-$DEFAULT_DOCKER_TARGET_IMAGE_BUILD}
 
@@ -109,7 +76,7 @@ BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS --build-arg TARGET_GLUTEN_REPO
 BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS --build-arg TARGET_GLUTEN_COMMIT=$TARGET_GLUTEN_COMMIT"
 BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS --build-arg CACHE_GLUTEN_REPO=$CACHE_GLUTEN_REPO"
 BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS --build-arg CACHE_GLUTEN_BRANCH=$CACHE_GLUTEN_BRANCH"
-BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS --build-arg EXTRA_MAVEN_OPTIONS=$EXTRA_MAVEN_OPTIONS"
+BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS --build-arg BACKEND_TYPE=$BACKEND_TYPE"
 BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS -f $BASEDIR/dockerfile-build"
 BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS --target gluten-build"
 BUILD_DOCKER_BUILD_ARGS="$BUILD_DOCKER_BUILD_ARGS -t $DOCKER_TARGET_IMAGE_BUILD"

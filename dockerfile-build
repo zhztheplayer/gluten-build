@@ -50,9 +50,42 @@ RUN ccache -s
 # Default Gluten Maven build options (empty as of now)
 ENV GLUTEN_MAVEN_OPTIONS="-Ddebug_build=$GLUTEN_DEBUG_BUILD"
 
-ARG EXTRA_MAVEN_OPTIONS
+ARG BACKEND_TYPE
 
-RUN test -n "$EXTRA_MAVEN_OPTIONS" || (echo "EXTRA_MAVEN_OPTIONS not set" && false)
+RUN test -n "$BACKEND_TYPE" || (echo "BACKEND_TYPE not set" && false)
+
+RUN if [ "$BACKEND_TYPE" == "velox" ]; \
+    then \
+      EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
+                           -Pbackends-velox \
+                           -Dbuild_protobuf=OFF \
+                           -Dbuild_cpp=ON \
+                           -Dbuild_arrow=ON \
+                           -Dbuild_velox=ON \
+                           -Dbuild_velox_from_source=ON \
+                           -Dbuild_gazelle_cpp=OFF \
+                           -DskipTests \
+                           -Dscalastyle.skip=true \
+                           -Dcheckstyle.skip=true \
+                           -Denable_ep_cache=ON"; \
+    elif [ "$BACKEND_TYPE" == "gazelle-cpp" ]; \
+    then \
+      EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
+                           -Pbackends-gazelle \
+                           -Dbuild_protobuf=ON \
+                           -Dbuild_cpp=ON \
+                           -Dbuild_arrow=ON \
+                           -Dbuild_velox=OFF \
+                           -Dbuild_velox_from_source=OFF \
+                           -Dbuild_gazelle_cpp=ON \
+                           -DskipTests \
+                           -Dscalastyle.skip=true \
+                           -Dcheckstyle.skip=true \
+                           -Denable_ep_cache=ON"; \
+    else \
+      echo "Unrecognizable backend type: $BACKEND_TYPE"; \
+      exit 1; \
+    fi && echo $EXTRA_MAVEN_OPTIONS > ~/.gluten-mvn-options;
 
 # Prebuild Gluten
 RUN cd /opt/gluten \
@@ -69,7 +102,8 @@ RUN cd /opt/gluten \
     && git fetch $TARGET_GLUTEN_REPO $TARGET_GLUTEN_COMMIT:build_$TARGET_GLUTEN_COMMIT \
     && git checkout build_$TARGET_GLUTEN_COMMIT
 
-RUN cd /opt/gluten \
-    &&  bash -c "mvn clean install $GLUTEN_MAVEN_OPTIONS $EXTRA_MAVEN_OPTIONS"
+RUN EXTRA_MAVEN_OPTIONS=$(cat ~/.gluten-mvn-options) \
+    && cd /opt/gluten \
+    && bash -c "mvn clean install $GLUTEN_MAVEN_OPTIONS $EXTRA_MAVEN_OPTIONS"
 
 # EOF
