@@ -47,19 +47,12 @@ RUN cd /opt/ \
 RUN ccache -M 128G
 RUN ccache -s
 
-ENV EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
-                         -Pbackends-velox \
-                         -Ddebug_build=$GLUTEN_DEBUG_BUILD \
-                         -Dbuild_protobuf=OFF \
-                         -Dbuild_cpp=ON \
-                         -Dbuild_arrow=ON \
-                         -Dbuild_velox=ON \
-                         -Dbuild_velox_from_source=ON \
-                         -Dbuild_gazelle_cpp=OFF \
-                         -DskipTests \
-                         -Dscalastyle.skip=true \
-                         -Dcheckstyle.skip=true \
-                         -Denable_ep_cache=ON"
+# Default Gluten Maven build options (empty as of now)
+ENV GLUTEN_MAVEN_OPTIONS="-Ddebug_build=$GLUTEN_DEBUG_BUILD"
+
+ARG EXTRA_MAVEN_OPTIONS
+
+RUN test -n "$EXTRA_MAVEN_OPTIONS" || (echo "EXTRA_MAVEN_OPTIONS not set" && false)
 
 # Prebuild Gluten
 RUN cd /opt/gluten \
