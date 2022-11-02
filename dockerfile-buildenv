@@ -48,7 +48,7 @@ RUN cat /root/.m2/settings.xml
 RUN apt-get update
 
 # Essentials
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget tar tzdata git ccache cmake ninja-build build-essential llvm-11-dev clang-11 libiberty-dev libdwarf-dev libre2-dev libz-dev libssl-dev libboost-all-dev libcurl4-openssl-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y sudo locales wget tar tzdata git ccache cmake ninja-build build-essential llvm-11-dev clang-11 libiberty-dev libdwarf-dev libre2-dev libz-dev libssl-dev libboost-all-dev libcurl4-openssl-dev
 
 # Install OpenJDK 8 and Maven
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-8-jdk;
@@ -62,5 +62,9 @@ RUN TZ=$TIMEZONE \
     && echo $TZ > /etc/timezone \
     && dpkg-reconfigure -f noninteractive tzdata
 
-# Default Gluten Maven build options (empty as of now)
-ENV GLUTEN_MAVEN_OPTIONS=""
+# Configure locale
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8
