@@ -17,7 +17,11 @@ RUN cd /opt/ \
 RUN cd /opt/gluten-it \
     && git fetch origin $GLUTEN_IT_COMMIT:build_$GLUTEN_IT_COMMIT \
     && git checkout build_$GLUTEN_IT_COMMIT
-    
+
+ARG BUILD_BACKEND_TYPE
+
+RUN test -n "$BUILD_BACKEND_TYPE" || (echo "BUILD_BACKEND_TYPE not set" && false)
+
 RUN if [ "$BUILD_BACKEND_TYPE" == "velox" ]; \
     then \
       GLUTEN_IT_MAVEN_OPTIONS="-Pspark-3.2 -Pgluten-velox -Darrow.version=10.0.0-SNAPSHOT"; \
