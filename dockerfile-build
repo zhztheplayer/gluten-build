@@ -14,7 +14,7 @@ RUN echo "Gluten debug build is [$GLUTEN_DEBUG_BUILD]!"
 # If JDK debug is on
 RUN if [ "$JDK_DEBUG_BUILD" == "ON" ]; \
     then \
-      apt-get update;
+      apt-get update; \
       DEBIAN_FRONTEND=noninteractive apt-get uninstall -y openjdk-8-jdk; \
       DEBIAN_FRONTEND=noninteractive apt-get uninstall -y maven; \
       mkdir -p /opt/jdk/ \
