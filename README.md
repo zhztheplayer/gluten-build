@@ -16,7 +16,7 @@ export HTTP_PROXY_HOST=myproxy.example.com # in case you are behind http proxy
 export HTTP_PROXY_PORT=55555 # in case you are behind http proxy
 
 cd gluten/
-../gluten-it/examples/buildhere-veloxbe.sh
+../gluten-te/examples/buildhere-veloxbe.sh
 ```
 
 # Getting Started (TPC, Velox backend)
