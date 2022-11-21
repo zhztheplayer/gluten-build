@@ -6,7 +6,7 @@ BASEDIR=$(dirname $0)
 
 EXTRA_MAVEN_OPTIONS="-Pspark-3.2 \
                      -Pbackends-velox \
-                     -Dbuild_protobuf=OFF \
+                     -Dbuild_protobuf=ON \
                      -Dbuild_cpp=ON \
                      -Dbuild_arrow=ON \
                      -Dbuild_velox=ON \
